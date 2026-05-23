@@ -10,7 +10,7 @@ const PROVIDERS = {
     url: "https://api.deepseek.com/v1/chat/completions",
     type: "openai",
     models: [
-      { id: "deepseek-v4-flash", name: "DeepSeek-V4 (非推理)" },
+      { id: "deepseek-chat", name: "DeepSeek-V3" },
       { id: "deepseek-reasoner", name: "DeepSeek-R1 (推理)" },
     ],
     keyLabel: "API Key",
