@@ -24,9 +24,9 @@ const PROVIDERS = {
     url: "https://api.minimax.chat/v1/chat/completions",
     type: "openai",
     models: [
-      { id: "abab7-chat", name: "ABAB7 Chat" },
       { id: "abab6.5s-chat", name: "ABAB6.5s Chat" },
-      { id: "MiniMax-Text-01", name: "MiniMax Text 01" },
+      { id: "abab5.5-chat", name: "ABAB5.5 Chat" },
+      { id: "abab5-chat", name: "ABAB5 Chat" },
     ],
     keyLabel: "API Key",
     keyHint: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -222,6 +222,24 @@ const css = `
     background: var(--surface);
     border-bottom: 1px solid var(--border);
   }
+  .input-model-bar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .input-model-label { font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
+  .input-model-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text); font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .input-model-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+  .input-model-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .input-model-name { font-family: 'IBM Plex Mono', monospace; color: var(--gold); }
   .input-row { display: flex; gap: 10px; align-items: flex-start; }
   .input-box {
     flex: 1;
@@ -1285,6 +1303,15 @@ export default function App() {
 
         {/* Input */}
         <div className="input-section">
+          <div className="input-model-bar">
+            <span className="input-model-label">当前模型</span>
+            <button className="input-model-btn" onClick={() => setShowSettings(true)}>
+              <span className="input-model-dot" />
+              <span>{currentProvider?.name}</span>
+              <span className="input-model-name">· {currentModelName}</span>
+              <span style={{color:"var(--dim)",marginLeft:"2px"}}>▼</span>
+            </button>
+          </div>
           <div className="input-row">
             <textarea
               ref={textareaRef}
