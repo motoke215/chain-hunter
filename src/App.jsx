@@ -788,12 +788,12 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
 
 {
   "title": "产业链名称（简洁，如：新能源汽车产业链）",
-  "summary": "产业链整体概述，100字以内，包含市场规模、核心逻辑、当前投资机会",
+  "summary": "产业链整体概述，200字以内，包含市场规模(万亿/亿)、核心驱动力、当前投资逻辑、景气度判断",
   "upstream": [
     {
       "id": "chip_upstream",
-      "name": "细分赛道名称",
-      "description": "该细分赛道的说明，包括技术特点、壁垒、市场规模",
+      "name": "细分赛道名称（精确到具体产品/技术，如：锂矿采选、碳化硅衬底、线控底盘）",
+      "description": "该细分赛道深度分析：1) 技术路线对比（优劣势），2) 市场规模区间（XX亿-XX亿）及增速，3) 竞争格局（CR3/CR5），4) 壁垒来源（技术/资源/认证），5) 国产替代进程",
       "companies": [
         {
           "name": "公司完整名称",
@@ -802,7 +802,7 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
           "relevance": 95,
           "businesses": ["核心相关业务", "次要相关业务"],
           "isMultiBusiness": false,
-          "description": "该公司在此细分赛道的核心业务详细说明，包括市场份额、技术优势、竞争地位，150字左右",
+          "description": "深度分析：1) 在该细分赛道的市场份额（国内/全球），2) 核心竞争优势（技术壁垒/成本/客户认证），3) 主要客户/竞争对手，4) 营收占比估算，5) 最新动态（扩产/技术突破/订单），200字以上",
           "multiBusinessNote": []
         }
       ]
@@ -813,14 +813,16 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
 }
 
 重要规则：
-1. 每个细分赛道列出3-6家最相关的A股/港股上市公司，按关联性从高到低排序
+1. 每个细分赛道列出5-10家最相关的A股/港股上市公司（必须包含沪深A股），按关联性从高到低排序，最多可以列出20家
 2. relevance为0-100的整数，表示公司与该细分赛道的关联度
-3. 如果一家公司在多个细分赛道都有业务（isMultiBusiness=true），在multiBusinessNote中说明各块业务：[{"segment": "细分赛道名", "detail": "业务说明"}]
+3. 如果一家公司在多个细分赛道都有业务（isMultiBusiness=true），在multiBusinessNote中说明各块业务：[{"segment": "细分赛道名", "detail": "业务说明，占比估算"}]
 4. businesses数组第一个是最核心的业务标签
-5. 上游通常是原材料、核心零部件、关键技术；中游是制造、组装、集成；下游是品牌整机、应用、服务
-6. 每个层级3-5个细分赛道
-7. ticker格式：A股为6位数字（如000001），港股加.HK，美股用英文代码
-8. 描述使用中文，专业但易懂`;
+5. 上游：原材料/零部件/设备；中游：制造/组装/集成；下游：品牌/终端/服务
+6. 每个层级必须列出至少5个细分赛道，尽量细分到具体产品
+7. ticker格式：A股6位数字（如000001），港股加.HK，美股用英文代码，北交所加BJ
+8. description必须包含具体数据（市场份额、营收占比、产能等），避免空洞描述
+9. 必须包含各细分赛道当前景气度（上行/平稳/下行）和驱动因素
+10. 描述使用中文，专业但易懂，有具体数据支撑`;
 
   let response, resultText;
 
@@ -835,7 +837,7 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
       },
       body: JSON.stringify({
         model: model,
-        max_tokens: 4000,
+        max_tokens: 8192,
         system: systemPrompt,
         messages: [{ role: "user", content: `请分析以下输入的产业链：\n\n${input}` }],
       }),
@@ -866,7 +868,7 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
       },
       body: JSON.stringify({
         model: model,
-        max_tokens: 4000,
+        max_tokens: 8192,
         temperature: 0.7,
         messages: [
           { role: "system", content: systemPrompt },
