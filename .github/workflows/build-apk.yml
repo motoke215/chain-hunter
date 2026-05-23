@@ -33,39 +33,23 @@ jobs:
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-          # Debug: show available SDKs
-          ls -la /usr/local/lib/android/sdk/platforms/ 2>/dev/null || echo "No platforms dir"
-          ls -la /usr/local/lib/android/sdk/build-tools/ 2>/dev/null || echo "No build-tools dir"
+          echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
 
       - name: Sync web assets to Android
         run: |
           mkdir -p android/app/src/main/assets/public
           cp -r dist/* android/app/src/main/assets/public/
           cp capacitor.config.json android/app/src/main/assets/
-          echo "Assets synced"
-
-      - name: Create local.properties
-        run: |
-          echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
 
       - name: Build APK
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace 2>&1 | tee build.log
-        continue-on-error: true
-
-      - name: Show build errors if any
-        run: |
-          if [ -f android/build.log ]; then
-            echo "=== Build Log (last 80 lines) ==="
-            tail -80 android/build.log
-          fi
+          ./gradlew assembleDebug
 
       - name: Upload APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: ChainHunter-APK
           path: android/app/build/outputs/apk/**/*.apk
-          if-no-files-found: warn
+          if-no-files-found: error
