@@ -30,14 +30,17 @@ jobs:
 
       - name: Setup Android SDK
         run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-
-      - name: Create local.properties
-        run: |
+          # Accept all SDK licenses
+          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses 2>&1 || true
+          # Install required SDK components
+          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" 2>&1 || true
           echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
-          cat android/local.properties
+          echo "SDK setup done"
 
       - name: Sync web assets to Android
         run: |
@@ -49,23 +52,11 @@ jobs:
         working-directory: android
         run: |
           chmod +x gradlew
-          ./gradlew assembleDebug
-
-      - name: Check APK output
-        run: |
-          echo "=== Searching for APK files ==="
-          find . -name "*.apk" -type f 2>/dev/null || echo "No APK found"
-          echo "=== Check android/app/build ==="
-          ls -la android/app/build/outputs/apk/ 2>/dev/null || echo "No apk dir"
-          ls -la android/app/build/outputs/ 2>/dev/null || echo "No outputs dir"
-          ls -la android/app/build/ 2>/dev/null || echo "No build dir"
-          ls -la android/build/ 2>/dev/null || echo "No root build dir"
+          ./gradlew assembleDebug --info
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ChainHunter-APK
-          path: |
-            android/app/build/outputs/apk/**/*.apk
-            **/*.apk
+          path: android/app/build/outputs/apk/**/*.apk
           if-no-files-found: warn
