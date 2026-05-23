@@ -32,27 +32,20 @@ jobs:
         run: |
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
+          echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
 
       - name: Sync web assets to Android
         run: |
           mkdir -p android/app/src/main/assets/public
           cp -r dist/* android/app/src/main/assets/public/
           cp capacitor.config.json android/app/src/main/assets/
-          echo "Assets synced successfully"
+          echo "Assets synced"
 
       - name: Build APK
         working-directory: android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug
-
-      - name: List APK files
-        run: |
-          echo "Looking for APK files..."
-          find android/app/build/outputs -name "*.apk" 2>/dev/null || echo "No APK found"
-          ls -la android/app/build/outputs/apk/debug/ 2>/dev/null || echo "Debug dir not found"
-          ls -la android/app/build/outputs/apk/ 2>/dev/null || echo "APK dir not found"
-          ls -la android/app/build/outputs/ 2>/dev/null || echo "Outputs dir not found"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
