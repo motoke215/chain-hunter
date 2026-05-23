@@ -1263,6 +1263,9 @@ export default function App() {
     };
   });
 
+  const currentProvider = PROVIDERS[settings.provider];
+  const currentApiKey = settings.apiKeys[settings.provider] || "";
+
   // Persist settings on change
   useEffect(() => {
     saveSettings(settings);
@@ -1271,9 +1274,6 @@ export default function App() {
       setSettings(prev => ({ ...prev, model: currentProvider.models[0]?.id || "" }));
     }
   }, [settings, currentProvider]);
-
-  const currentProvider = PROVIDERS[settings.provider];
-  const currentApiKey = settings.apiKeys[settings.provider] || "";
 
   const handleAnalyze = useCallback(async () => {
     const q = input.trim();
