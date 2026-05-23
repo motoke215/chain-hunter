@@ -844,7 +844,16 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
     });
 
     if (!response.ok) {
-      throw new Error(`API错误 ${response.status}: 请检查API Key和网络状态`);
+      const status = response.status;
+      if (status === 400) {
+        throw new Error(`请求参数错误(400)：模型或参数不被支持，请尝试更换模型`);
+      } else if (status === 401 || status === 403) {
+        throw new Error(`认证失败(${status})：API Key无效或权限不足，请检查Key`);
+      } else if (status >= 500) {
+        throw new Error(`服务器错误(${status})：提供商服务暂时异常，请稍后重试或换模型`);
+      } else {
+        throw new Error(`API错误(${status})：请检查API Key和网络状态`);
+      }
     }
 
     const data = await response.json();
@@ -869,12 +878,23 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
     });
 
     if (!response.ok) {
-      throw new Error(`API错误 ${response.status}: 请检查API Key和网络状态`);
+      const status = response.status;
+      if (status === 400) {
+        throw new Error(`请求参数错误(400)：模型或参数不被支持，请尝试更换模型`);
+      } else if (status === 401 || status === 403) {
+        throw new Error(`认证失败(${status})：API Key无效或权限不足，请检查Key`);
+      } else if (status >= 500) {
+        throw new Error(`服务器错误(${status})：提供商服务暂时异常，请稍后重试或换模型`);
+      } else {
+        throw new Error(`API错误(${status})：请检查API Key和网络状态`);
+      }
     }
 
     const data = await response.json();
     resultText = data.choices?.[0]?.message?.content || "";
   }
+
+  if (!resultText.trim()) throw new Error("AI返回内容为空，请检查模型和API Key");
 
   if (!resultText.trim()) throw new Error("AI返回内容为空，请检查模型和API Key");
 
