@@ -5,11 +5,16 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -35,10 +40,22 @@ jobs:
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
-          # Accept all SDK licenses
-          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses 2>&1 || true
-          # Install required SDK components
-          /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" 2>&1 || true
+
+          # Find actual cmdline-tools path
+          SDK_CMDLINE_TOOLS=""
+          if [ -d "/usr/local/lib/android/sdk/cmdline-tools/latest" ]; then
+            SDK_CMDLINE_TOOLS="/usr/local/lib/android/sdk/cmdline-tools/latest"
+          elif [ -d "/usr/local/lib/android/sdk/cmdline-tools" ]; then
+            SDK_CMDLINE_TOOLS=$(find /usr/local/lib/android/sdk/cmdline-tools -maxdepth 1 -type d -name "*" | sort | tail -1)
+          fi
+
+          if [ -n "$SDK_CMDLINE_TOOLS" ] && [ -f "$SDK_CMDLINE_TOOLS/bin/sdkmanager" ]; then
+            yes | $SDK_CMDLINE_TOOLS/bin/sdkmanager --licenses 2>&1 || true
+            $SDK_CMDLINE_TOOLS/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" 2>&1 || true
+          else
+            echo "SDK cmdline-tools not found, skipping license acceptance"
+          fi
+
           echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
           echo "SDK setup done"
 

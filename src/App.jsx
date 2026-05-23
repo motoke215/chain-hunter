@@ -142,7 +142,11 @@ const DEFAULT_PROVIDER = "deepseek";
 const PROVIDER_ORDER = ["deepseek", "minimax", "siliconflow", "anthropic", "openai", "zhipu", "moonshot", "qwen", "baichuan"];
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&family=Bebas+Neue&display=swap');`;
+// ─── Fonts ───────────────────────────────────────────────────────────────────
+// Using system font fallback + inline critical font subset
+const FONT_FAMILY = "'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+const MONO_FAMILY = "'IBM Plex Mono', 'Cascadia Code', 'Fira Code', monospace";
+const FONTS = ""; // Google Fonts loaded dynamically to avoid blocking
 
 const css = `
   ${FONTS}
@@ -163,9 +167,9 @@ const css = `
     --dim:      #374151;
     --up:       #22c55e;
     --down:     #ef4444;
-    font-family: 'Noto Sans SC', sans-serif;
+    font-family: ${FONT_FAMILY};
   }
-  body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+  body { background: var(--bg); color: var(--text); overflow-x: hidden; font-family: ${FONT_FAMILY}; }
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
@@ -749,7 +753,11 @@ function loadSettings() {
 function saveSettings(settings) {
   try {
     localStorage.setItem("chain_hunter_settings", JSON.stringify(settings));
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+      alert("存储空间已满，请清理浏览器缓存后重试");
+    }
+  }
 }
 
 // ─── API Call ─────────────────────────────────────────────────────────────────
@@ -818,8 +826,7 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
     });
 
     if (!response.ok) {
-      const errBody = await response.text();
-      throw new Error(`API错误 ${response.status}: ${errBody.slice(0, 200)}`);
+      throw new Error(`API错误 ${response.status}: 请检查API Key和网络状态`);
     }
 
     const data = await response.json();
@@ -844,8 +851,7 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
     });
 
     if (!response.ok) {
-      const errBody = await response.text();
-      throw new Error(`API错误 ${response.status}: ${errBody.slice(0, 200)}`);
+      throw new Error(`API错误 ${response.status}: 请检查API Key和网络状态`);
     }
 
     const data = await response.json();
