@@ -24,7 +24,7 @@ const PROVIDERS = {
     url: "https://api.minimax.chat/v1/chat/completions",
     type: "openai",
     models: [
-      { id: "m27", name: "MiniMax M2.7" },
+      { id: "minimax-m2.7", name: "MiniMax-M2.7" },
       { id: "abab6.5s-chat", name: "ABAB6.5s (旧)" },
     ],
     keyLabel: "API Key",
@@ -1253,16 +1253,24 @@ export default function App() {
   const [settings, setSettings] = useState(() => {
     const saved = loadSettings();
     return {
-      provider: saved.provider || DEFAULT_PROVIDER,
-      model: saved.model || PROVIDERS[DEFAULT_PROVIDER].models[0].id,
-      apiKeys: saved.apiKeys || {},
+      provider: saved.provider || "deepseek",
+      model: saved.model || "deepseek-chat",
+      apiKeys: {
+        ...saved.apiKeys,
+        deepseek: saved.apiKeys?.deepseek || "sk-b9718a59d34448fe933aa1acb333f1e5",
+        minimax: saved.apiKeys?.minimax || "sk-cp-NYmdKPXREp0JX39Fp5wTFWT_fxAYYi5rqbFjdkiyFKCyDfVfdeSkKOrD1fIZo0mWKd2lM1N_mBAjkoN0x3X4LmrC7GLAzqNg0P9qoWDzvf-8LI73ZTXQPHo",
+      },
     };
   });
 
   // Persist settings on change
   useEffect(() => {
     saveSettings(settings);
-  }, [settings]);
+    // Ensure selected model is still valid for current provider
+    if (currentProvider && !currentProvider.models.find(m => m.id === settings.model)) {
+      setSettings(prev => ({ ...prev, model: currentProvider.models[0]?.id || "" }));
+    }
+  }, [settings, currentProvider]);
 
   const currentProvider = PROVIDERS[settings.provider];
   const currentApiKey = settings.apiKeys[settings.provider] || "";
