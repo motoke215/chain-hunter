@@ -782,7 +782,12 @@ async function analyzeIndustry(input, providerId, model, apiKey) {
   if (!provider) throw new Error(`未知的AI提供商: ${providerId}`);
 
   const systemPrompt = `你是一位顶级的A股行业研究分析师，专注于产业链分析和上市公司研究。
-用户会输入一段新闻、行业名称、概念或链接描述，你需要进行深度产业链分析。
+用户会输入：行业名称、新闻内容、新闻描述、或链接描述，你需要自动识别其中的行业/赛道，然后进行深度产业链分析。
+
+输入识别逻辑：
+- 如果输入是新闻内容或链接描述 → 先识别涉及的行业和赛道，再分析完整产业链
+- 如果输入是行业名称 → 直接分析该行业完整产业链
+- 关联公司范围：直接参股、间接参股、同一控制人、供应商、客户、竞争对手（同赛道）、产业链上下游
 
 返回严格的JSON格式，不要有任何额外文字、注释或markdown代码块。结构如下：
 
@@ -1340,7 +1345,7 @@ export default function App() {
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder="输入新闻内容、行业名称（如：新能源汽车）、概念或链接描述...  Ctrl+Enter 分析"
+              placeholder="输入行业名称、新闻内容、新闻链接、概念描述...  Ctrl+Enter 分析"
               rows={2}
             />
             <button
