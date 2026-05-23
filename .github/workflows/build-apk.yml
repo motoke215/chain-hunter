@@ -51,7 +51,7 @@ jobs:
 
           if [ -n "$SDK_CMDLINE_TOOLS" ] && [ -f "$SDK_CMDLINE_TOOLS/bin/sdkmanager" ]; then
             yes | $SDK_CMDLINE_TOOLS/bin/sdkmanager --licenses 2>&1 || true
-            $SDK_CMDLINE_TOOLS/bin/sdkmanager "platforms;android-35" "build-tools;35.0.0" 2>&1 || true
+            $SDK_CMDLINE_TOOLS/bin/sdkmanager "platforms;android-36" "build-tools;36.0.0" 2>&1 || true
           else
             echo "SDK cmdline-tools not found, skipping license acceptance"
           fi
