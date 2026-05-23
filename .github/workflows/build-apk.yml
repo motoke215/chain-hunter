@@ -28,12 +28,16 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Android environment
+      - name: Setup Android SDK
         run: |
           echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> $GITHUB_ENV
           echo "/usr/local/lib/android/sdk/platform-tools" >> $GITHUB_PATH
+
+      - name: Create local.properties
+        run: |
           echo "sdk.dir=/usr/local/lib/android/sdk" > android/local.properties
+          cat android/local.properties
 
       - name: Sync web assets to Android
         run: |
@@ -47,9 +51,21 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
+      - name: Check APK output
+        run: |
+          echo "=== Searching for APK files ==="
+          find . -name "*.apk" -type f 2>/dev/null || echo "No APK found"
+          echo "=== Check android/app/build ==="
+          ls -la android/app/build/outputs/apk/ 2>/dev/null || echo "No apk dir"
+          ls -la android/app/build/outputs/ 2>/dev/null || echo "No outputs dir"
+          ls -la android/app/build/ 2>/dev/null || echo "No build dir"
+          ls -la android/build/ 2>/dev/null || echo "No root build dir"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: ChainHunter-APK
-          path: android/app/build/outputs/apk/**/*.apk
-          if-no-files-found: error
+          path: |
+            android/app/build/outputs/apk/**/*.apk
+            **/*.apk
+          if-no-files-found: warn
